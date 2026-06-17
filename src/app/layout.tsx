@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   description:
     "We build websites that work. Wezero is a web agency for companies that care about the details.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    process.env.NEXT_PUBLIC_APP_URL || "https://wezerostudio.pages.dev"
   ),
   openGraph: {
     title: "Wezero — Web Agency",
@@ -53,10 +53,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Wezero — Web Agency",
     description: "We build websites that work.",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
   },
 };
 
