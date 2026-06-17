@@ -28,13 +28,20 @@ result
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-debug.log
+*.log
+
+# IDE
+.cursor/
+.vscode/
+.idea/
 
 # lockfiles (bun only - delete others if they appear)
 package-lock.json

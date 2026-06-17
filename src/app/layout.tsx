@@ -1,41 +1,58 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { LayoutLoader } from "./components/LayoutLoader";
+import { Space_Grotesk, Syne, Anton, Satisfy } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const syne = Syne({
   subsets: ["latin"],
+  weight: ["700", "800"],
+  variable: "--font-syne",
   display: "swap",
 });
 
-// TODO: Update these values for your project
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const anton = Anton({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-anton",
+  display: "swap",
+});
+
+const satisfy = Satisfy({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-satisfy",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Project Name - Tagline",
-    template: "%s | Project Name",
+    default: "Wezero — Web Agency",
+    template: "%s | Wezero",
   },
-  description: "A clear, compelling description of what this project does.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  description:
+    "We build websites that work. Wezero is a web agency for companies that care about the details.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
   openGraph: {
-    title: "Project Name - Tagline",
-    description: "A clear, compelling description of what this project does.",
+    title: "Wezero — Web Agency",
+    description: "We build websites that work.",
     url: "/",
-    siteName: "Project Name",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Project Name",
-      },
-    ],
+    siteName: "Wezero",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Project Name - Tagline",
-    description: "A clear, compelling description of what this project does.",
-    images: ["/og-image.png"],
+    title: "Wezero — Web Agency",
+    description: "We build websites that work.",
   },
   icons: {
     icon: "/favicon.ico",
@@ -50,7 +67,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${syne.variable} ${spaceGrotesk.variable} ${anton.variable} ${satisfy.variable}`}>
+        <LayoutLoader />
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,87 +1,79 @@
-# Project Name
+# Wezero
 
-Brief description of what this project does and who it's for.
-
-> The repository homepage URL is automatically set to the Cloudflare Pages deployment URL on first deploy.
+Marketing website for Wezero — a web agency for companies that care about the details.
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (static export, no SSR)
+- **Framework**: Next.js 15 (App Router, static export)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
-- **Hosting**: Cloudflare Pages (static files)
+- **Smooth scroll**: Lenis
+- **Package manager**: Bun
+- **Hosting**: Cloudflare Pages
 - **CI/CD**: GitHub Actions — deploys on push to `main`, preview URLs on PRs
-- **Dev Environment**: Nix (optional) + Bun
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home — hero, services, why Wezero, featured work, CTA |
+| `/work` | Work index — project grid and process overview |
+| `/work/[slug]` | Project detail page |
+| `/about` | About — story, values, team |
+| `/contact` | Contact form |
 
 ## Getting Started
 
-### With Nix (recommended)
-
 ```bash
-cp .env.example .env.local
-nix develop          # drops you into a shell with bun, node, treefmt, lefthook
 bun install
-bun run dev
-```
-
-### Without Nix
-
-Ensure you have [bun](https://bun.sh) and [lefthook](https://github.com/evilmartians/lefthook) installed.
-
-```bash
-cp .env.example .env.local
-bun install
-lefthook install
 bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-## Environment Variables
-
-Copy `.env.example` to `.env.local` and fill in the values:
-
-| Variable | Description | Where to get it |
-|----------|-------------|-----------------|
-| `NEXT_PUBLIC_APP_URL` | Public app URL | Your domain |
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `bun run dev` | Start dev server with Turbopack |
-| `bun run build` | Production static build (`out/` directory) |
+| `bun run build` | Production static build → `out/` |
 | `bun run lint` | Run ESLint |
-| `bun run format` | Format with treefmt (prettier + nixfmt) |
 | `bun run type-check` | TypeScript type checking |
 
 ## Deployment
 
-Deployments are fully automated. The Cloudflare Pages project name is derived from the GitHub repository name — no manual configuration needed beyond org-level secrets:
+Push to `main` — the CI pipeline handles the rest.
 
-- `CLOUDFLARE_API_TOKEN` — Cloudflare API token with Pages permissions
-- `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID
-- `GH_ADMIN_TOKEN` (optional) — GitHub PAT with `administration:write` scope, for auto-setting the repo homepage URL
+**Required GitHub secrets:**
 
-On first push to `main`, the workflow will:
-1. Create the Cloudflare Pages project automatically
-2. Deploy the static build output
-3. Set the GitHub repository homepage URL to the deployment URL (requires `GH_ADMIN_TOKEN`)
+| Secret | Description |
+|--------|-------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Pages write permissions |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+| `GH_ADMIN_TOKEN` | *(Optional)* GitHub PAT with `administration:write` — auto-sets the repo homepage URL to the live deployment URL |
 
-PRs get preview deployments with a URL comment.
-
-See the [CI/CD SOP](https://github.com/wezero-studio/sop/blob/main/ci-cd.md) for setup details.
+The Cloudflare Pages project name is derived from the GitHub repository name automatically. On first push, the workflow creates the project and deploys. PRs get isolated preview deployments with a URL comment.
 
 ## Project Structure
 
 ```
 src/
-  app/          # Next.js App Router pages and layouts
-  components/   # Reusable UI components
-  lib/          # Utility functions and shared logic
-public/         # Static assets (favicon, og-image, _headers)
-flake.nix       # Nix dev environment
-treefmt.nix     # treefmt config (nix-native)
-treefmt.toml    # treefmt config (non-nix fallback)
-lefthook.yml    # Git hooks (lint, format, type-check on commit)
+  app/
+    page.tsx              # Home
+    layout.tsx            # Root layout (fonts, metadata)
+    globals.css           # Global styles + Tailwind
+    work/
+      page.tsx            # Work index
+      [slug]/
+        page.tsx          # Project detail route
+        ProjectDetail.tsx # Project detail component
+    about/
+      page.tsx
+    contact/
+      page.tsx
+public/
+  _headers              # Cloudflare Pages response headers
+.github/
+  workflows/
+    ci.yml              # Lint → type-check → build → deploy
 ```
