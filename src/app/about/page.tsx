@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
+import { Navbar } from '@/components/Navbar';
 
 function SliceUpText({ text, triggered, baseDelay = 0, descender = false }: { text: string; triggered: boolean; baseDelay?: number; descender?: boolean }) {
   const pb = descender ? '0.55em' : '0.15em';
@@ -55,9 +56,6 @@ function useInView(threshold = 0.2) {
 }
 
 export default function AboutPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuBtnHovered, setMenuBtnHovered] = useState(false);
-  const [hoveredMenuItem, setHoveredMenuItem] = useState<string | null>(null);
   const [heroVisible, setHeroVisible] = useState(false);
 
   const teamRef = useRef<HTMLDivElement>(null);
@@ -87,45 +85,12 @@ export default function AboutPage() {
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (menuOpen) { document.body.style.overflow = 'hidden'; }
-    else { document.body.style.overflow = ''; }
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
 
-  const menuItems = [
-    { label: 'HOME',    href: '/' },
-    { label: 'WORK',    href: '/work' },
-    { label: 'ABOUT',   href: '/about' },
-    { label: 'CONTACT', href: '/contact' },
-  ];
 
   return (
     <>
-      {/* Nav — outside animated div */}
-      <nav
-        className="fixed top-0 left-0 right-0 z-[200] flex justify-between items-start font-body text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-black"
-        style={{ padding: 'clamp(16px, 2.5vh, 28px) clamp(24px, 4vw, 52px)' }}
-      >
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-5">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-black" />
-            ISLAMABAD, PK
-          </span>
-          <span>33.6844 N, 73.0479 E</span>
-        </div>
-        <button
-          aria-label="Menu"
-          onClick={() => setMenuOpen(true)}
-          onMouseEnter={() => setMenuBtnHovered(true)}
-          onMouseLeave={() => setMenuBtnHovered(false)}
-          className="cursor-pointer flex flex-col items-center justify-center"
-          style={{ background: 'none', border: 'none' }}
-        >
-          <span className="font-display font-black text-2xl sm:text-3xl tracking-[-0.08em] scale-y-[1.4] inline-block text-black">MENU</span>
-          <span style={{ display: 'block', height: '1.5px', width: '100%', background: '#0A0A0A', transform: menuBtnHovered ? 'scaleX(1)' : 'scaleX(0)', transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)', transformOrigin: 'center' }} />
-        </button>
-      </nav>
+      {/* Nav */}
+      <Navbar />
 
       <div style={{ minHeight: '100vh', background: '#ffffff', position: 'relative', animation: 'pageEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) both' }}>
 
@@ -196,37 +161,7 @@ export default function AboutPage() {
 
       </div>
 
-      {/* Menu overlay — outside animated div */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#000000', clipPath: menuOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)', transition: 'clip-path 1.15s cubic-bezier(0.76, 0, 0.24, 1)', display: 'flex', flexDirection: 'column', padding: 'clamp(18px, 2.5vh, 32px) clamp(24px, 4vw, 60px) clamp(28px, 4vh, 56px)', pointerEvents: menuOpen ? 'auto' : 'none' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={() => { setMenuOpen(false); setHoveredMenuItem(null); }} style={{ color: '#ffffff', background: 'none', border: 'none', fontFamily: 'var(--font-space-grotesk)', fontWeight: 700, fontSize: 'clamp(13px, 1.1vw, 17px)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>CLOSE</button>
-        </div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px, 2vh, 28px)' }}>
-            {menuItems.map((item, idx) => (
-              <a key={item.label} href={item.href} onClick={(e) => { e.preventDefault(); setMenuOpen(false); setTimeout(() => { window.location.href = item.href; }, 750); }} style={{ display: 'block', fontFamily: 'var(--font-anton)', fontSize: 'clamp(52px, 9.5vw, 140px)', lineHeight: 0.88, textTransform: 'uppercase', color: item.href === '/about' ? '#1038CC' : '#ffffff', textDecoration: 'none', letterSpacing: '-0.02em' }} onMouseEnter={() => setHoveredMenuItem(item.label)} onMouseLeave={() => setHoveredMenuItem(null)}>
-                <div style={{ clipPath: 'inset(0 -20% 0 0)' }}>
-                  <div style={{ transform: menuOpen ? 'translateY(0)' : 'translateY(110%)', transition: menuOpen ? ('transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) ' + (idx * 80) + 'ms') : 'none' }}>
-                    <div style={{ display: 'inline-block', transform: hoveredMenuItem === item.label ? 'scale(1.06)' : 'scale(1)', transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)', transformOrigin: 'left center' }}>{item.label}</div>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-        <div className="menu-bottom-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div className="menu-social-links" style={{ display: 'flex', flexDirection: 'row', gap: 'clamp(16px, 2vw, 32px)', alignItems: 'center' }}>
-            {[{ label: 'LinkedIn', href: '#' }, { label: 'Instagram', href: '#' }, { label: 'Twitter / X', href: '#' }, { label: 'hello@wezero.studio', href: 'mailto:hello@wezero.studio' }].map((link) => (
-              <a key={link.label} href={link.href} style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(13px, 1.1vw, 16px)', fontWeight: 500, color: '#ffffff', textDecoration: 'none' }}>{link.label}</a>
-            ))}
-          </div>
-          <a href="/contact" onClick={(e) => { e.preventDefault(); setMenuOpen(false); setTimeout(() => { window.location.href = '/contact'; }, 750); }}>
-            <button style={{ background: 'transparent', border: '1.5px solid #ffffff', borderRadius: '999px', padding: '14px 32px', fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(14px, 1.2vw, 18px)', fontWeight: 600, color: '#ffffff', cursor: 'pointer', transition: 'background 0.25s ease, color 0.25s ease' }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#ffffff'; (e.currentTarget as HTMLButtonElement).style.color = '#0A0A0A'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#ffffff'; }}>
-              {"Let's talk"} &#8599;
-            </button>
-          </a>
-        </div>
-      </div>
+
 
       {/* ═══ Footer ═══ */}
       <footer style={{ marginTop: 'clamp(60px, 10vh, 120px)', background: '#ffffff', borderTop: '1px solid rgba(0,0,0,0.1)', padding: 'clamp(48px, 7vh, 100px) clamp(24px, 5vw, 80px) clamp(32px, 4vh, 60px)' }}>
