@@ -63,7 +63,7 @@ export const projects: Project[] = [
     last: '/images/aliandashford/last.png',
     url: 'https://stuartandali.pages.dev/',
     zoomSlots: [4],
-    imgStyles: { 7: { transform: 'translateY(15px) scale(1.2)', transformOrigin: 'center top' } },
+    imgStyles: { 5: { transform: 'translateY(25px) scale(1.3)', transformOrigin: 'center top' }, 7: { transform: 'translateY(-20px) scale(1.05)', transformOrigin: 'center top' } },
   },
   {
     slug: 'exerra',
