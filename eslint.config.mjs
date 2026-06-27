@@ -8,7 +8,12 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 const config = [
   ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
   {
-    ignores: [".next/", "out/", "build/", "next-env.d.ts"],
+    ignores: [".next/", "out/", "build/", "next-env.d.ts", "scripts/"],
+  },
+  {
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
   },
 ];
 

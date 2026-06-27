@@ -47,7 +47,6 @@ function ParallaxGrid() {
   const bgLayerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const imgLayerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const imgContainerRef = useRef<HTMLDivElement>(null);
-  const rafScrollRef = useRef<number | null>(null);
   const rafMouseRef = useRef<number | null>(null);
   const isHoveredRef = useRef(false);
   const mousePosRef = useRef({ x: 0, y: 0 });
@@ -92,12 +91,11 @@ function ParallaxGrid() {
   };
 
   useEffect(() => {
-    const handle = () => {
-      if (rafScrollRef.current !== null) return;
-      rafScrollRef.current = requestAnimationFrame(() => {
-        rafScrollRef.current = null;
-        const el = containerRef.current;
-        if (!el) return;
+    let rafId: number;
+
+    const update = () => {
+      const el = containerRef.current;
+      if (el) {
         const rect = el.getBoundingClientRect();
         const scrolledIntoContainer = -rect.top;
         const vh = window.innerHeight;
@@ -105,7 +103,6 @@ function ParallaxGrid() {
         projects.forEach((_, i) => {
           let progress = 0;
           if (i > 0) {
-            // Project 1 starts transitioning at scroll 0, project 2 at 1vh, etc.
             const start = (i - 1) * vh;
             const end = i * vh;
             const raw = (scrolledIntoContainer - start) / (end - start);
@@ -114,25 +111,22 @@ function ParallaxGrid() {
 
           const bgLayer = bgLayerRefs.current[i];
           if (bgLayer) {
-            // inset(TOP right bottom left)
-            // Clipping from the TOP → bottom of layer appears first → bottom-to-top reveal ✓
             bgLayer.style.clipPath = `inset(${i === 0 ? 0 : (1 - progress) * 100}% 0 0 0)`;
           }
 
           const imgLayer = imgLayerRefs.current[i];
           if (imgLayer) {
-            // Auto-trigger the inner image when background is 40% of the way in
-            imgLayer.style.clipPath = `inset(${i === 0 || progress > 0.4 ? 0 : 100}% 0 0 0)`;
+            imgLayer.style.clipPath = `inset(${i === 0 ? 0 : (1 - progress) * 100}% 0 0 0)`;
           }
         });
-      });
+      }
+      rafId = requestAnimationFrame(update);
     };
 
-    window.addEventListener('scroll', handle, { passive: true });
-    handle();
+    rafId = requestAnimationFrame(update);
+
     return () => {
-      window.removeEventListener('scroll', handle);
-      if (rafScrollRef.current !== null) cancelAnimationFrame(rafScrollRef.current);
+      cancelAnimationFrame(rafId);
       if (rafMouseRef.current !== null) cancelAnimationFrame(rafMouseRef.current);
     };
   }, []);
@@ -177,6 +171,8 @@ function ParallaxGrid() {
               alt=""
               className="absolute inset-0 w-full h-full object-cover scale-110"
               style={{ filter: 'blur(16px) brightness(0.62)' }}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
             />
 
             {/* Text row — flex with an invisible spacer the same width as the central image.
@@ -247,6 +243,7 @@ function ParallaxGrid() {
               style={{
                 width: IMG_WIDTH,
                 aspectRatio: '16 / 9',
+                overflow: 'hidden',
                 transform: 'translate(-50%, -50%) scale(0.6)',
                 opacity: 0,
                 transition: 'transform 0.2s cubic-bezier(0.4, 0, 1, 1), opacity 0.18s cubic-bezier(0.4, 0, 1, 1)',
@@ -260,7 +257,7 @@ function ParallaxGrid() {
                   style={{
                     zIndex: i + 1,
                     clipPath: i === 0 ? 'inset(0% 0 0 0)' : 'inset(100% 0 0 0)',
-                    transition: 'clip-path 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                    willChange: 'clip-path',
                   }}
                 >
                   <a
@@ -271,10 +268,12 @@ function ParallaxGrid() {
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   >
                     <img
-                      src={p.src}
+                      src={p.heroSmall}
                       alt={p.name}
                       className="w-full h-full object-cover shadow-2xl"
                       style={{ display: 'block' }}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
                     />
 
                     {/* VIEW PROJECT labels — inside the image on all 4 edges */}

@@ -39,6 +39,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
   ];
 
   const imgs = project.images ?? [];
+  const zoomed = (idx: number) => (project.zoomSlots ?? []).includes(idx);
 
   return (
     <>
@@ -123,7 +124,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
           style={{ background: 'none', border: 'none' }}
         >
           <span className="font-display font-black text-2xl sm:text-3xl tracking-[-0.08em] scale-y-[1.4] inline-block text-black">MENU</span>
-          <span style={{ display: 'block', height: '1.5px', width: '100%', background: '#0A0A0A', transform: menuBtnHovered ? 'scaleX(1)' : 'scaleX(0)', transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)', transformOrigin: 'center' }} />
+          <span style={{ display: 'block', height: '1.5px', width: '100%', background: '#0A0A0A', marginTop: '6px', transform: menuBtnHovered ? 'scaleX(1)' : 'scaleX(0)', transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)', transformOrigin: 'center' }} />
         </button>
       </nav>
 
@@ -191,65 +192,63 @@ export default function ProjectDetail({ slug }: { slug: string }) {
           <div>
             <p style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(10px, 0.75vw, 12px)', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', marginBottom: '16px' }}>Overview</p>
             <p style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(15px, 1.2vw, 20px)', fontWeight: 400, color: '#0A0A0A', lineHeight: 1.7 }}>{project.overview}</p>
-            <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '32px', fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(12px, 0.9vw, 14px)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A', textDecoration: 'none' }}>
-              View Website
-              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="2"/></svg>
-            </a>
+            {project.url && (
+              <a href={project.url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '32px', fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(12px, 0.9vw, 14px)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A', textDecoration: 'none' }}>
+                View Website
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="2"/></svg>
+              </a>
+            )}
           </div>
         </section>
 
-        {/* Image grid — 5 rows, mix and match */}
+        {/* Image gallery — full screenshots, no cropping */}
         <section style={{ padding: '0 clamp(24px, 5vw, 80px)', marginBottom: 'clamp(80px, 10vh, 120px)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.5vw, 20px)' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.5vw, 20px)' }}>
 
-          {/* Row 1: single image */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-            <div style={{ aspectRatio: '16/7', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[0] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            {/* Row 1: single full-width screenshot */}
+            <div style={{ background: '#f2f2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={imgs[0] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
             </div>
+
+            {/* Row 2: two screenshots side by side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 'clamp(12px, 1.5vw, 20px)' }}>
+              <div style={{ background: '#f2f2f2' }}>
+                <img src={imgs[1] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+              <div style={{ background: '#f2f2f2', overflow: 'hidden' }}>
+                <img src={imgs[2] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block', ...(project.imgStyles?.[2] ?? {}) }} />
+              </div>
+            </div>
+
+            {/* Row 3: three screenshots */}
+            <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 'clamp(12px, 1.5vw, 20px)' }}>
+              <div style={{ background: '#f2f2f2' }}>
+                <img src={imgs[3] ?? imgs[0] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+              <div style={{ background: '#f2f2f2', overflow: zoomed(4) ? 'hidden' : 'visible' }}>
+                <img src={imgs[4] ?? imgs[1] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block', transform: zoomed(4) ? 'scale(1.35)' : 'none', transformOrigin: 'center center' }} />
+              </div>
+              <div style={{ background: '#f2f2f2' }}>
+                <img src={imgs[5] ?? imgs[2] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+            </div>
+
+            {/* Row 4: single full-width screenshot */}
+            <div style={{ background: '#f2f2f2' }}>
+              <img src={imgs[6] ?? imgs[0] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            </div>
+
+            {/* Row 5: two screenshots, unequal split */}
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 'clamp(12px, 1.5vw, 20px)', alignItems: 'start' }}>
+              <div style={{ background: '#f2f2f2', overflow: (zoomed(7) || project.imgStyles?.[7]) ? 'hidden' : 'visible' }}>
+                <img src={imgs[7] ?? imgs[1] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block', transform: zoomed(7) ? 'scale(1.25)' : 'none', transformOrigin: 'center center', ...(project.imgStyles?.[7] ?? {}) }} />
+              </div>
+              <div style={{ background: '#f2f2f2', overflow: project.zoomLast ? 'hidden' : 'visible' }}>
+                <img src={project.last ?? imgs[5] ?? imgs[2] ?? project.src} alt="" style={{ width: '100%', height: 'auto', display: 'block', transform: project.zoomLast ? 'scale(1.2)' : 'none', transformOrigin: 'center center' }} />
+              </div>
+            </div>
+
           </div>
-
-          {/* Row 2: two images */}
-          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 'clamp(12px, 1.5vw, 20px)' }}>
-            <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[1] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-            <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[2] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          </div>
-
-          {/* Row 3: three smaller images */}
-          <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 'clamp(12px, 1.5vw, 20px)' }}>
-            <div style={{ aspectRatio: '3/4', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[3] ?? imgs[0] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-            <div style={{ aspectRatio: '3/4', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[4] ?? imgs[1] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-            <div style={{ aspectRatio: '3/4', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[5] ?? imgs[2] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          </div>
-
-          {/* Row 4: single full-width image */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-            <div style={{ aspectRatio: '21/6', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[0] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          </div>
-
-          {/* Row 5: two images, unequal split */}
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr]" style={{ gap: 'clamp(12px, 1.5vw, 20px)' }}>
-            <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[1] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-            <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
-              <img src={imgs[2] ?? project.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          </div>
-
-        </div>
         </section>
 
       </div>
@@ -257,7 +256,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
       {/* Menu overlay — outside animated div so position:fixed works correctly */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#000000', clipPath: menuOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)', transition: 'clip-path 1.15s cubic-bezier(0.76, 0, 0.24, 1)', display: 'flex', flexDirection: 'column', padding: 'clamp(18px, 2.5vh, 32px) clamp(24px, 4vw, 60px) clamp(28px, 4vh, 56px)', pointerEvents: menuOpen ? 'auto' : 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={() => { setMenuOpen(false); setHoveredMenuItem(null); }} style={{ color: '#ffffff', background: 'none', border: 'none', fontFamily: 'var(--font-space-grotesk)', fontWeight: 700, fontSize: 'clamp(13px, 1.1vw, 17px)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>CLOSE</button>
+          <button onClick={() => { setMenuOpen(false); setHoveredMenuItem(null); }} className="hover:underline" style={{ color: '#ffffff', background: 'none', border: 'none', fontFamily: 'var(--font-space-grotesk)', fontWeight: 700, fontSize: 'clamp(13px, 1.1vw, 17px)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', textUnderlineOffset: '4px' }}>CLOSE</button>
         </div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px, 2vh, 28px)' }}>

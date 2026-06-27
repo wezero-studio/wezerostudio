@@ -1,192 +1,18 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
-import Link from "next/link";
 import Lenis from "lenis";
 import { Loader } from "./components/Loader";
 import { Navbar } from "@/components/Navbar";
+import { AnimatedLetter, SliceDownText, SliceUpText, SliceUpWords } from "./components/TextAnimations";
+import { ServicesSection } from "./components/ServicesSection";
+import { PortfolioCards } from "./components/PortfolioCards";
 
 const HERO_LETTERS = ["w", "e", "z", "e", "r", "o"];
 
-/* ─── Animated Letter ─── */
-// Supports: 
-//   1. Vertical slice-up entrance (revealed = letters slide up into view)
-//   2. Horizontal side-slice on hover + auto-trigger
-function AnimatedLetter({
-  letter,
-  revealed,
-  autoSlice,
-}: {
-  letter: string;
-  revealed: boolean;
-  autoSlice: boolean;
-}) {
-  const [isSlicing, setIsSlicing] = useState(false);
-
-  const handleMouseEnter = () => {
-    if (!isSlicing) {
-      setIsSlicing(true);
-      setTimeout(() => setIsSlicing(false), 500);
-    }
-  };
-
-  // Auto-trigger side-slice once
-  useEffect(() => {
-    if (autoSlice && !isSlicing) {
-      setIsSlicing(true);
-      setTimeout(() => setIsSlicing(false), 500);
-    }
-  }, [autoSlice]);
-
-  return (
-    // Outer wrapper: vertical overflow mask for the slice-up entrance
-    <span
-      className="relative inline-block"
-      style={{
-        overflow: 'hidden',
-        paddingBottom: '0.25em',
-        marginBottom: '-0.25em',
-      }}
-    >
-      {/* Inner wrapper: slides up from below for entrance, then holds position */}
-      <span
-        className="inline-block"
-        style={{
-          transform: revealed ? 'translateY(0)' : 'translateY(115%)',
-          transition: revealed
-            ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)'
-            : 'none',
-        }}
-      >
-        {/* Side-slice container: horizontal overflow mask */}
-        <span
-          className="relative inline-block cursor-default"
-          style={{
-            overflow: 'hidden',
-            paddingRight: '0.1em',
-            marginRight: '-0.1em',
-            paddingBottom: '0.3em',
-            marginBottom: '-0.3em',
-            transform: 'translateZ(0)',
-          }}
-          onMouseEnter={handleMouseEnter}
-        >
-          {/* Original letter — slides left on slice */}
-          <span
-            className={`inline-block transition-transform duration-500 ease-in-out ${isSlicing ? '-translate-x-[110%]' : 'translate-x-0'}`}
-          >
-            {letter}
-          </span>
-          {/* Blue copy — slides in from right on slice */}
-          <span
-            className={`absolute left-0 top-0 inline-block transition-transform duration-500 ease-in-out text-[#1038CC] ${isSlicing ? 'translate-x-0' : 'translate-x-[250%]'}`}
-            aria-hidden="true"
-          >
-            {letter}
-          </span>
-        </span>
-      </span>
-    </span>
-  );
-}
-
-/* ─── Slice-down text ─── */
-function SliceDownText({ text, triggered }: { text: string; triggered: boolean }) {
-  return (
-    <>
-      {text.split('').map((char, i) => (
-        <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top' }}>
-          <span style={{
-            display: 'inline-block',
-            transform: triggered ? 'translateY(0)' : 'translateY(-115%)',
-            transition: triggered
-              ? `transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${i * 45}ms`
-              : 'none',
-          }}>
-            {char === ' ' ? ' ' : char}
-          </span>
-        </span>
-      ))}
-    </>
-  );
-}
-
-/* ─── Slice-up text ─── */
-function SliceUpText({ text, triggered }: { text: string; triggered: boolean }) {
-  let charIndex = 0;
-  return (
-    <>
-      {text.split(' ').map((word, wordIdx, wordsArr) => {
-        const wordNode = (
-          <span key={`word-${wordIdx}`} style={{ whiteSpace: 'nowrap' }}>
-            {word.split('').map((char, i) => {
-              const currentI = charIndex++;
-              return (
-                <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', paddingBottom: '0.1em', marginBottom: '-0.1em', paddingTop: '0.15em', marginTop: '-0.15em', paddingRight: '0.12em', marginRight: '-0.12em', paddingLeft: '0.05em', marginLeft: '-0.05em' }}>
-                  <span style={{
-                    display: 'inline-block',
-                    transform: triggered ? 'translateY(0)' : 'translateY(115%)',
-                    transition: triggered
-                      ? `transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) ${currentI * 90}ms`
-                      : 'none',
-                  }}>
-                    {char}
-                  </span>
-                </span>
-              );
-            })}
-          </span>
-        );
-        
-        if (wordIdx < wordsArr.length - 1) {
-          const spaceI = charIndex++;
-          return (
-            <span key={`frag-${wordIdx}`} style={{ display: 'inline' }}>
-              {wordNode}
-              <span style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', paddingBottom: '0.1em', marginBottom: '-0.1em', paddingTop: '0.15em', marginTop: '-0.15em', paddingRight: '0.12em', marginRight: '-0.12em', paddingLeft: '0.05em', marginLeft: '-0.05em' }}>
-                <span style={{
-                  display: 'inline-block',
-                  transform: triggered ? 'translateY(0)' : 'translateY(115%)',
-                  transition: triggered
-                    ? `transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) ${spaceI * 90}ms`
-                    : 'none',
-                }}>
-                  &nbsp;
-                </span>
-              </span>
-            </span>
-          );
-        }
-        return wordNode;
-      })}
-    </>
-  );
-}
-
-/* ─── Slice-up words ─── */
-function SliceUpWords({ text, triggered }: { text: string; triggered: boolean }) {
-  return (
-    <>
-      {text.split(' ').map((word, i) => (
-        <span key={i} style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', paddingBottom: '0.15em', marginBottom: '-0.15em', marginRight: '0.25em' }}>
-          <span style={{
-            display: 'inline-block',
-            transform: triggered ? 'translateY(0)' : 'translateY(115%)',
-            transition: triggered
-              ? `transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40}ms`
-              : 'none',
-          }}>
-            {word}
-          </span>
-        </span>
-      ))}
-    </>
-  );
-}
-
-/* ─── Animation phases ─── */
+/* â”€â”€â”€ Animation phases â”€â”€â”€ */
 // Phase 0: Loader is showing, wezero hidden
-// Phase 1: Loader done → wezero letters slice UP into view (centered on screen)
+// Phase 1: Loader done â†’ wezero letters slice UP into view (centered on screen)
 // Phase 2: Side-slice animation fires on ALL letters simultaneously
 // Phase 3: wezero moves up to final position at top
 // Phase 4: Nav + bottom content slides in
@@ -251,13 +77,13 @@ export default function Home() {
     if (sec2P > 0.3 && !sec2LockFired.current) {
       sec2LockFired.current = true;
       lenisRef.current?.stop();
-      // ~28 words × 40ms stagger + 0.8s animation = ~1.9s; add 300ms buffer
+      // ~28 words Ã— 40ms stagger + 0.8s animation = ~1.9s; add 300ms buffer
       sec2LockTimer.current = setTimeout(() => {
         lenisRef.current?.start();
         sec2LockTimer.current = null;
       }, 1600);
     }
-  }, [scrollY]);
+  }, [scrollY]); // eslint-disable-line react-hooks/exhaustive-deps -- vh is window.innerHeight at render, not tracked state
 
   // Hide nav on scroll down, show on scroll up; always hide in cards section
   useEffect(() => {
@@ -272,7 +98,7 @@ export default function Home() {
     } else if (scrollY < prev - 4) {
       setNavHidden(false);
     }
-  }, [scrollY, cardsWrapperTop]);
+  }, [scrollY, cardsWrapperTop]); // eslint-disable-line react-hooks/exhaustive-deps -- vh is window.innerHeight at render, not tracked state
 
   // Lenis smooth scroll
   useEffect(() => {
@@ -310,7 +136,7 @@ export default function Home() {
     }
   }, [phase]);
 
-  // 0→1 as user scrolls one viewport height through the sticky zone
+  // 0â†’1 as user scrolls one viewport height through the sticky zone
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1440;
   const scrollProgress = Math.min(scrollY / vh, 1);
@@ -331,7 +157,7 @@ export default function Home() {
   const svgCircleVmax = (68 / 400) * fixedDiagWidth / Math.max(vw, vh) * 100;
   // starts exactly at the SVG inner circle size, expands with cubic easing
   const circleRadius = svgCircleVmax + Math.pow(transitionProgress, 3) * (130 - svgCircleVmax);
-  // 0→1 while section 2 is sticky
+  // 0â†’1 while section 2 is sticky
   const section2Progress = Math.max(0, Math.min((scrollY - 2 * vh) / (2 * vh), 1));
   // Trigger section 2.5 on enter, reset on exit so it replays on scroll-back
   const moveTimer2_5 = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -440,7 +266,7 @@ export default function Home() {
       <div style={{ height: '200vh' }}>
       <section className="relative h-screen flex flex-col sticky top-0" style={{ overflow: phase >= 4 ? 'visible' : 'hidden' }}>
 
-        {/* wezero — centered during phases 0-2, moves to top in phase 3+ */}
+        {/* wezero â€” centered during phases 0-2, moves to top in phase 3+ */}
         <div
           className="absolute left-0 right-0 flex items-center justify-center w-full z-10"
           style={{
@@ -469,7 +295,7 @@ export default function Home() {
           </h1>
         </div>
 
-        {/* Middle Section: Text - Orange Box - Text — slides in from top in phase 4 */}
+        {/* Middle Section: Text - Orange Box - Text â€” slides in from top in phase 4 */}
         <div
           className="relative flex items-center justify-center w-full z-20"
           style={{
@@ -487,12 +313,12 @@ export default function Home() {
             <SliceDownText text="A DIGITAL" triggered={phase >= 4} />
           </h2>
 
-          {/* Center Shape (Absolute Center) — hidden on mobile */}
+          {/* Center Shape (Absolute Center) â€” hidden on mobile */}
           <div
             className="flex-col items-center w-full max-w-[300px] sm:max-w-[380px] md:max-w-[460px] z-0 hidden sm:flex"
             style={{ opacity: scrollY > vh * 0.99 ? 0 : 1 }}
           >
-            {/* Label — always visible, never moves */}
+            {/* Label â€” always visible, never moves */}
             <div className="w-full flex justify-between text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: '#555' }}>
               <span>WEB DESIGN</span>
               <span>2026</span>
@@ -538,7 +364,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Bottom Scroll Cue — fades in with phase 4, desktop only */}
+        {/* Bottom Scroll Cue â€” fades in with phase 4, desktop only */}
         <div
           className="hidden sm:flex absolute bottom-5 left-0 w-full justify-center text-[10px] font-bold tracking-widest uppercase text-black z-20"
           style={{
@@ -555,7 +381,7 @@ export default function Home() {
       {/* Transition: SVG diagram floats, inner circle expands to fill screen (Desktop only) */}
       {!isMobile && scrollY > vh * 0.99 && scrollY < vh * 2 + 80 && (
         <>
-          {/* Floating diagram — no fade, just gets covered by the circle */}
+          {/* Floating diagram â€” no fade, just gets covered by the circle */}
           <div style={{
             position: 'fixed',
             left: '50%',
@@ -571,7 +397,7 @@ export default function Home() {
               <circle cx="200" cy="110" r="68" fill="#1038CC" />
             </svg>
           </div>
-          {/* Blue circle — starts at SVG inner circle size, expands above everything */}
+          {/* Blue circle â€” starts at SVG inner circle size, expands above everything */}
           <div style={{
             position: 'fixed',
             inset: 0,
@@ -583,7 +409,7 @@ export default function Home() {
         </>
       )}
 
-      {/* Section 2 — sticky manifesto zone */}
+      {/* Section 2 â€” sticky manifesto zone */}
       <div style={{ height: '165vh' }}>
         <section
           className="sticky top-0 h-screen overflow-hidden"
@@ -629,10 +455,10 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Section 2.5 — We Build Experiences That Matter */}
+      {/* Section 2.5 â€” We Build Experiences That Matter */}
       <section ref={section2_5Ref} className="relative bg-cream text-[#0A0A0A]" style={{ height: '85vh', zIndex: 2, position: 'relative' }}>
 
-          {/* Main Heading — direct child of section so left:0 = viewport left.
+          {/* Main Heading â€” direct child of section so left:0 = viewport left.
               Desktop: starts centered (transform-only), animates to left.
               Mobile: fixed left with padding (no centering animation). */}
           <div
@@ -676,7 +502,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Subtext — appears simultaneously with auto-move */}
+          {/* Subtext â€” appears simultaneously with auto-move */}
           <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-10 relative h-full">
             <div
               className="absolute left-6 right-6 sm:left-auto sm:right-10 md:right-16 max-w-[460px]"
@@ -696,7 +522,7 @@ export default function Home() {
               </p>
               <p className="font-[family-name:var(--font-space-grotesk)] text-base md:text-lg font-medium leading-[1.4] text-black/70">
                 <SliceUpWords
-                  text="Because great digital products aren't just seen — they're felt strategically, emotionally, and operationally."
+                  text="Because great digital products aren't just seen â€” they're felt strategically, emotionally, and operationally."
                   triggered={movedLeft2_5}
                 />
               </p>
@@ -706,191 +532,9 @@ export default function Home() {
       </section>
 
       {/* ═══ Services sticky list ═══ */}
-      {(() => {
-        const SERVICES = [
-          { name: 'Design',    desc: 'Clarity-first interfaces built to convert.',    boxColor: '#dde8f5', img: 'https://picsum.photos/seed/uxdesign/400/500' },
-          { name: 'Build',     desc: 'Clean code. Zero legacy debt. Ships on time.',  boxColor: '#e2e2e2', img: 'https://picsum.photos/seed/devcode/400/500'  },
-          { name: 'Strategy',  desc: 'Hard questions asked before a file is opened.', boxColor: '#f0e4d7', img: 'https://picsum.photos/seed/strategy9/400/500' },
-          { name: 'SEO',       desc: 'Sites that rank — and stay ranked.',             boxColor: '#d7ece2', img: 'https://picsum.photos/seed/seoweb/400/500'   },
-          { name: 'Branding',  desc: 'Identity that holds up at every scale.',         boxColor: '#dde8f5', img: 'https://picsum.photos/seed/branding7/400/500' },
-          { name: 'Motion',    desc: 'Animation that adds meaning, not noise.',        boxColor: '#e8e2f0', img: 'https://picsum.photos/seed/motion33/400/500'  },
-          { name: 'Analytics', desc: 'Data wired to decisions, not dashboards.',       boxColor: '#f0ead7', img: 'https://picsum.photos/seed/analytics8/400/500'},
-          { name: 'Scale',     desc: 'Infrastructure ready for your next phase.',      boxColor: '#d7e2ec', img: 'https://picsum.photos/seed/scale22/400/500'},
-        ];
+      <ServicesSection scrollY={scrollY} vh={vh} servicesWrapperTop={servicesWrapperTop} isMobile={isMobile} servicesWrapperRef={servicesWrapperRef} />
 
-        const rawProgress = Math.max(0, (scrollY - servicesWrapperTop) / (vh * 0.22));
-        const activeIndex = Math.min(Math.floor(rawProgress), SERVICES.length - 1);
-
-        const ITEM_HEIGHT_VH = 15;
-        const listTranslateY = -(rawProgress * ITEM_HEIGHT_VH);
-
-        if (isMobile) {
-          return (
-            <section className="bg-cream py-24 px-6 sm:px-10 flex flex-col items-center justify-center w-full gap-6">
-              <span
-                className="font-[family-name:var(--font-space-grotesk)] text-black mb-8"
-                style={{ fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 500 }}
-              >
-                The services we provide
-              </span>
-              {SERVICES.map((s, i) => (
-                <div key={i} className="flex flex-col items-center w-full mb-8">
-                  <span
-                    className="font-[family-name:var(--font-space-grotesk)] font-bold tracking-tight block mb-3 text-center"
-                    style={{ fontSize: 'clamp(36px, 10vw, 64px)', color: '#1038CC' }}
-                  >
-                    {s.name}
-                  </span>
-                  <p className="font-[family-name:var(--font-space-grotesk)] font-medium leading-[1.4] text-black text-[17px] sm:text-lg max-w-[300px] text-center">
-                    {s.desc}
-                  </p>
-                </div>
-              ))}
-            </section>
-          );
-        }
-
-        return (
-          <div ref={servicesWrapperRef} style={{ height: `${Math.ceil((SERVICES.length - 1) * 22 + 100)}vh`, marginTop: '-15vh' }}>
-            <section className="sticky top-0 h-screen overflow-hidden bg-cream flex items-center" style={{ zIndex: 1 }}>
-              <div
-                className="w-full max-w-[1600px] mx-auto flex items-center h-full relative"
-                style={{ padding: '0 clamp(24px, 5vw, 80px)' }}
-              >
-                {/* Column 1: Static label */}
-                <div style={{ flex: '0 0 18%', paddingRight: '20px' }}>
-                  <span
-                    className="font-[family-name:var(--font-space-grotesk)] text-black"
-                    style={{ fontSize: 'clamp(14px, 1.2vw, 18px)', fontWeight: 500 }}
-                  >
-                    The services we provide
-                  </span>
-                </div>
-
-                {/* Column 2: Scrolling List */}
-                <div style={{ flex: '0 0 36%', position: 'relative', height: '100%' }}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: 0,
-                      width: '100%',
-                      transform: `translateY(calc(-${ITEM_HEIGHT_VH / 2}vh + ${listTranslateY}vh))`,
-                      willChange: 'transform',
-                      backfaceVisibility: 'hidden' as const
-                    }}
-                  >
-                    {SERVICES.map((s, i) => {
-                      const isActive = i === activeIndex;
-
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            height: `${ITEM_HEIGHT_VH}vh`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            fontFamily: 'var(--font-space-grotesk)',
-                            fontWeight: 700,
-                            letterSpacing: '-0.02em',
-                            fontSize: 'clamp(38px, 6vw, 94px)',
-                            lineHeight: 1.05,
-                            color: isActive ? '#1038CC' : '#0A0A0A',
-                            opacity: 1,
-                            transition: 'color 0.3s ease',
-                            cursor: 'default',
-                            userSelect: 'none',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {s.name}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                {/* Column 3: Image placeholder (hidden on mobile) */}
-                <div className="hidden md:flex" style={{ flex: '0 0 23%', justifyContent: 'center' }}>
-                  <div style={{ position: 'relative', width: 'clamp(100px, 12vw, 200px)', aspectRatio: '1/1', borderRadius: 8, overflow: 'hidden' }}>
-                    {/* Static background box */}
-                    <div style={{ position: 'absolute', inset: 0, backgroundColor: '#EBEBEB', zIndex: -1 }} />
-                    
-                    {SERVICES.map((s, i) => {
-                      const progressDiff = i - rawProgress;
-                      
-                      let transformStr = '';
-                      let opacityVal = 1;
-                      
-                      if (progressDiff >= 0) {
-                        const t = Math.max(0, Math.min(progressDiff, 1));
-                        const easeT = t * t * (3 - 2 * t);
-                        transformStr = `translateY(${easeT * 100}%) rotate(${easeT * 45}deg) scale(${1 - easeT * 0.6})`;
-                        opacityVal = progressDiff > 1 ? 0 : 1;
-                      } else {
-                        const outT = Math.max(0, Math.min(-progressDiff, 1));
-                        const easeOutT = outT * outT * (3 - 2 * outT);
-                        transformStr = `translateY(-${easeOutT * 40}%) rotate(-${easeOutT * 45}deg) scale(${1 - easeOutT * 0.4})`;
-                        opacityVal = outT >= 1 ? 0 : 1;
-                      }
-                      
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            backgroundColor: s.boxColor || '#dce3ed',
-                            zIndex: i,
-                            transformOrigin: 'center center',
-                            transform: transformStr,
-                            opacity: opacityVal,
-                            willChange: 'transform'
-                          }}
-                        >
-                          {s.img && (
-                            <img 
-                              src={s.img} 
-                              alt={s.name} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Column 4: Description text */}
-                <div style={{ flex: '1', position: 'relative', height: '100%' }}>
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', maxWidth: '320px', minHeight: '80px', textAlign: 'center' }}>
-                    {SERVICES.map((s, i) => (
-                      <p
-                        key={i}
-                        className="font-[family-name:var(--font-space-grotesk)] font-medium leading-[1.25] tracking-tight"
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: 0,
-                          margin: 0,
-                          fontSize: 'clamp(16px, 1.5vw, 22px)',
-                          color: '#0A0A0A',
-                          opacity: i === activeIndex ? 1 : 0,
-                          transform: `translateY(${i === activeIndex ? '-50%' : 'calc(-50% + 15px)'})`,
-                          transition: 'opacity 0.45s ease, transform 0.45s ease',
-                        }}
-                      >
-                        {s.desc}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        );
-      })()}
-
-      {/* Section 3 — What We Do */}
+      {/* Section 3 â€” What We Do */}
       <section ref={section3Ref} className="relative min-h-screen bg-cream pt-48 px-6 sm:px-10 overflow-hidden text-[#0A0A0A]" style={{ paddingBottom: '18vh', marginTop: '-10vh' }}>
         <div className="w-full max-w-[1600px] mx-auto flex flex-col">
           {/* WHAT */}
@@ -914,14 +558,12 @@ export default function Home() {
                 transition: 'opacity 0.8s ease 0.6s, transform 0.8s ease 0.6s',
                 marginTop: '0.2vw'
               }}>
-                <Link href="/work">
-                  <button className="bg-[#0A0A0A] text-white font-[family-name:var(--font-anton)] uppercase tracking-[0.05em] text-sm md:text-xl flex items-center gap-3 hover:bg-[#1038CC] transition-colors cursor-pointer group" style={{ padding: '13px 32px 11px', lineHeight: 1 }}>
-                    OUR WORKS
-                    <svg className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" width="14" height="14" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="2"/>
-                    </svg>
-                  </button>
-                </Link>
+                <button onClick={() => { window.location.href = '/work'; }} className="bg-[#0A0A0A] text-white font-[family-name:var(--font-anton)] uppercase tracking-[0.05em] text-sm md:text-xl flex items-center gap-3 hover:bg-[#1038CC] transition-colors cursor-pointer group" style={{ padding: '13px 32px 11px', lineHeight: 1 }}>
+                  OUR WORKS
+                  <svg className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" width="14" height="14" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -952,225 +594,9 @@ export default function Home() {
       </section>
 
       {/* ═══ Sticky card stack ═══ */}
-      {(() => {
-        const CARD_COUNT = 4;
-        const SCROLL_PER_CARD = 1.5; // vh units of scroll per card transition
-        const cardsProgress = Math.max(0, (scrollY - cardsWrapperTop) / vh);
+      <PortfolioCards scrollY={scrollY} vh={vh} cardsWrapperTop={cardsWrapperTop} isMobile={isMobile} cardsWrapperRef={cardsWrapperRef} />
 
-        const cards = [
-          {
-            bg: '#0A0A0A',
-            title1: 'WEB', title2: 'DESIGN',
-            copy: 'Interfaces that are fast to learn and hard to leave. We design for clarity first, beauty second — and both tend to show up.',
-            diamonds: [
-              { text: 'STRATEGY', w: 200, h: 500, fontSize: 26, ml: 0 },
-              { text: 'NARRATIVE', w: 250, h: 620, fontSize: 32, ml: -75 },
-              { text: 'DIRECTION', w: 200, h: 500, fontSize: 26, ml: -75 },
-            ],
-            diamondFill: '#0A0A0A',
-          },
-          {
-            bg: '#E84220',
-            title1: 'BRAND', title2: 'IDENTITY',
-            copy: 'Identity that holds up at every size, screen, and surface. From wordmarks to full brand systems — built to last and built to scale.',
-            diamonds: [
-              { text: 'MARK', w: 200, h: 500, fontSize: 26, ml: 0 },
-              { text: 'PALETTE', w: 250, h: 620, fontSize: 32, ml: -75 },
-              { text: 'VOICE', w: 200, h: 500, fontSize: 26, ml: -75 },
-            ],
-            diamondFill: '#E84220',
-            textColor: '#0A0A0A',
-          },
-          {
-            bg: '#1038CC',
-            title1: 'WEB', title2: 'DEV',
-            copy: 'Next.js, TypeScript, clean architecture. We write code that future developers won\'t hate. Production-ready from day one.',
-            diamonds: [
-              { text: 'NEXT.JS', w: 200, h: 500, fontSize: 26, ml: 0 },
-              { text: 'TYPESCRIPT', w: 250, h: 620, fontSize: 32, ml: -75 },
-              { text: 'DEPLOY', w: 200, h: 500, fontSize: 26, ml: -75 },
-            ],
-            diamondFill: '#1038CC',
-          },
-          {
-            bg: '#1A3A28',
-            title1: 'DIGITAL', title2: 'STRAT',
-            copy: 'Before we open a design file, we ask hard questions. What does this need to do? For who? By when? Good strategy makes everything downstream easier.',
-            diamonds: [
-              { text: 'RESEARCH', w: 200, h: 500, fontSize: 26, ml: 0 },
-              { text: 'STRATEGY', w: 250, h: 620, fontSize: 32, ml: -75 },
-              { text: 'ROADMAP', w: 200, h: 500, fontSize: 26, ml: -75 },
-            ],
-            diamondFill: '#1A3A28',
-          },
-        ];
-
-        if (isMobile) {
-          // Mobile view: Simple stacked blocks
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {cards.map((card, idx) => {
-                const textColor = card.textColor || '#ffffff';
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      background: card.bg,
-                      padding: '80px 24px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '32px',
-                    }}
-                  >
-                    <h2
-                      className="font-[family-name:var(--font-anton)] text-[clamp(48px,11vw,200px)] uppercase tracking-tight m-0"
-                      style={{ lineHeight: 1, color: textColor }}
-                    >
-                      <span style={{ display: 'block' }}>{card.title1}</span>
-                      <span style={{ display: 'block', marginTop: '0.06em' }}>{card.title2}</span>
-                    </h2>
-                    <p
-                      className="font-[family-name:var(--font-space-grotesk)] text-xl font-medium leading-[1.3]"
-                      style={{ color: textColor === '#0A0A0A' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)' }}
-                    >
-                      {card.copy}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        }
-
-        // Desktop view: Sticky scroll stack
-        return (
-          <div ref={cardsWrapperRef} style={{ height: `${CARD_COUNT * SCROLL_PER_CARD * 100 + 25}vh` }}>
-            <div className="sticky top-0 h-screen overflow-hidden">
-              {cards.map((card, idx) => {
-                const cardStart = idx * SCROLL_PER_CARD;
-                const cardEnd = cardStart + SCROLL_PER_CARD;
-                const localProgress = Math.max(0, Math.min((cardsProgress - cardStart) / SCROLL_PER_CARD, 1));
-
-                const isLast = idx === CARD_COUNT - 1;
-                const isActive = cardsProgress >= cardStart && (isLast || cardsProgress < cardEnd);
-                const isPast = cardsProgress >= cardEnd;
-                const isFuture = cardsProgress < cardStart;
-
-                // Outgoing: current card slides down + fades at the end
-                let translateY = 0;
-                let opacity = 1;
-                let scale = 1;
-
-                if (isPast && !isLast) {
-                  translateY = 40;
-                  opacity = 0;
-                  scale = 0.85;
-                } else if (isActive && !isLast) {
-                  translateY = localProgress * 40; // slides DOWN further (40%)
-                  opacity = localProgress < 0.5 ? 1 : 1 - ((localProgress - 0.5) / 0.5); // smoother fade over last 50%
-                  scale = 1 - localProgress * 0.15; // bends/shrinks deeper into background
-                }
-
-                // Incoming: next card slides up from bottom
-                if (isFuture) {
-                  const prevStart = (idx - 1) * SCROLL_PER_CARD;
-                  const prevProgress = Math.max(0, Math.min((cardsProgress - prevStart) / SCROLL_PER_CARD, 1));
-                  translateY = 100 - prevProgress * 100;
-                  opacity = 1; // no fade in, just slide up
-                  scale = 1;
-                }
-
-                const textColor = card.textColor || '#ffffff';
-                const strokeColor = card.textColor === '#0A0A0A' ? '#0A0A0A' : '#f2eddf';
-                const diamondTextColor = card.textColor === '#0A0A0A' ? '#0A0A0A' : '#f2eddf';
-
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: card.bg,
-                      transform: `translateY(${translateY}%) scale(${scale})`,
-                      opacity,
-                      zIndex: idx + 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      paddingLeft: 'clamp(24px, 4vw, 60px)',
-                      paddingRight: 'clamp(24px, 4vw, 60px)',
-                      willChange: 'transform, opacity',
-                      backfaceVisibility: 'hidden' as const,
-                    }}
-                  >
-                    <div className="w-full max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-16 md:gap-8">
-
-                      {/* Left: heading + copy */}
-                      <div className="flex flex-col gap-8 md:max-w-[50%] z-10" style={{ paddingLeft: '3vw' }}>
-                        <h2
-                          className="font-[family-name:var(--font-anton)] text-[clamp(64px,11vw,200px)] uppercase tracking-tight m-0"
-                          style={{ lineHeight: 1, color: textColor }}
-                        >
-                          <span style={{ display: 'block' }}>{card.title1}</span>
-                          <span style={{ display: 'block', marginTop: '0.06em' }}>{card.title2}</span>
-                        </h2>
-                        <p
-                          className="font-[family-name:var(--font-space-grotesk)] text-2xl md:text-[28px] font-medium leading-[1.3] max-w-[500px]"
-                          style={{ color: textColor === '#0A0A0A' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)', marginTop: '8vh' }}
-                        >
-                          {card.copy}
-                        </p>
-                      </div>
-
-                      {/* Right: Elongated diamonds (hidden on mobile) */}
-                      <div className="md:w-[50%] w-full hidden md:flex items-center justify-end md:pt-0" style={{ paddingRight: '4vw' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', position: 'relative', padding: '40px 0' }}>
-                          {card.diamonds.map((item, i) => (
-                            <div
-                              key={i}
-                              style={{
-                                width: item.w,
-                                height: item.h,
-                                flexShrink: 0,
-                                marginLeft: item.ml,
-                                position: 'relative',
-                                zIndex: i === 1 ? 2 : 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <svg viewBox="0 0 100 240" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-                                <polygon points="50,2 98,120 50,238 2,120" fill={card.diamondFill} stroke={strokeColor} strokeWidth="1.5" />
-                              </svg>
-                              <span style={{
-                                fontFamily: 'var(--font-anton)',
-                                fontSize: item.fontSize,
-                                color: diamondTextColor,
-                                whiteSpace: 'nowrap',
-                                letterSpacing: '0.06em',
-                                position: 'relative',
-                                zIndex: 1,
-                                writingMode: 'vertical-rl' as const,
-                                textOrientation: 'mixed' as const,
-                                transform: 'rotate(180deg)',
-                              }}>
-                                {item.text}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* ═══ Final Statement ═══ */}
+      {/* â•â•â• Final Statement â•â•â• */}
       <section
         ref={finalSectionRef}
         style={{
@@ -1216,7 +642,7 @@ export default function Home() {
                 We don&apos;t cut corners. The difference between a site that lasts two years and one that needs a full rebuild in six months is almost always craft.
               </p>
               <p style={{ flex: 1, fontFamily: 'var(--font-space-grotesk)', fontSize: 'clamp(15px, 1.3vw, 20px)', fontWeight: 500, lineHeight: 1.5, color: '#0A0A0A', margin: 0 }}>
-                When we&apos;re done, you own everything — the repo, the assets, the docs. Built to run without us. No lock-in, ever.
+                When we&apos;re done, you own everything â€” the repo, the assets, the docs. Built to run without us. No lock-in, ever.
               </p>
             </div>
             <a href="/contact">
@@ -1233,7 +659,7 @@ export default function Home() {
 
       </div>
 
-      {/* ═══ Footer ═══ */}
+      {/* â•â•â• Footer â•â•â• */}
       <footer style={{
         background: '#ffffff',
         borderTop: '1px solid rgba(0,0,0,0.1)',
@@ -1257,9 +683,9 @@ export default function Home() {
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: '280px' }}>
               {[
                 { label: 'hello@wezero.studio', href: 'mailto:hello@wezero.studio' },
-                { label: 'LinkedIn ↗', href: '#' },
-                { label: 'Instagram ↗', href: '#' },
-                { label: 'Twitter / X ↗', href: '#' },
+                { label: 'LinkedIn â†—', href: '#' },
+                { label: 'Instagram â†—', href: '#' },
+                { label: 'Twitter / X â†—', href: '#' },
               ].map((link, i) => (
                 <a
                   key={i}
@@ -1312,7 +738,7 @@ export default function Home() {
               textAlign: 'right',
               lineHeight: 1.6,
             }}>
-              © 2026 Wezero. All rights reserved.
+              Â© 2026 Wezero. All rights reserved.
             </p>
           </div>
 
@@ -1321,4 +747,3 @@ export default function Home() {
     </>
   );
 }
-

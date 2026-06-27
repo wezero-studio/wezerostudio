@@ -35,7 +35,7 @@ export default function ContactPage() {
     { key: 'message', label: 'MESSAGE',         type: 'text',     tag: 'textarea' },
   ] as const;
 
-  const fieldStyle = (key: string) => ({
+  const fieldStyle = () => ({
     width: '100%',
     background: 'transparent',
     border: 'none',
@@ -48,7 +48,7 @@ export default function ContactPage() {
     resize: 'none' as const,
   });
 
-  const labelStyle = (key: string) => ({
+  const labelStyle = () => ({
     fontFamily: 'var(--font-space-grotesk)',
     fontSize: 'clamp(10px, 0.85vw, 13px)',
     fontWeight: 700,
@@ -91,7 +91,7 @@ export default function ContactPage() {
           <div style={{ borderTop: '1.5px solid rgba(10,10,10,0.15)' }}>
             {fields.map(({ key, label, type, tag }) => (
               <div key={key} style={{ borderBottom: `1.5px solid ${focused === key ? '#0A0A0A' : 'rgba(10,10,10,0.15)'}`, transition: 'border-color 0.4s ease' }}>
-                <label style={labelStyle(key)}>{label}</label>
+                <label style={labelStyle()}>{label}</label>
                 {tag === 'textarea' ? (
                   <textarea
                     rows={4}
@@ -99,7 +99,7 @@ export default function ContactPage() {
                     onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))}
                     onFocus={() => setFocused(key)}
                     onBlur={() => setFocused(null)}
-                    style={fieldStyle(key)}
+                    style={fieldStyle()}
                   />
                 ) : (
                   <input
@@ -108,7 +108,7 @@ export default function ContactPage() {
                     onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))}
                     onFocus={() => setFocused(key)}
                     onBlur={() => setFocused(null)}
-                    style={fieldStyle(key)}
+                    style={fieldStyle()}
                   />
                 )}
               </div>
