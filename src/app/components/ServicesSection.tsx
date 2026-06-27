@@ -18,7 +18,7 @@ interface Props {
   vh: number;
   servicesWrapperTop: number;
   isMobile: boolean;
-  servicesWrapperRef: RefObject<HTMLDivElement>;
+  servicesWrapperRef: RefObject<HTMLDivElement | null>;
 }
 
 export function ServicesSection({ scrollY, vh, servicesWrapperTop, isMobile, servicesWrapperRef }: Props) {

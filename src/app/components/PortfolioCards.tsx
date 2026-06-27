@@ -68,7 +68,7 @@ interface Props {
   vh: number;
   cardsWrapperTop: number;
   isMobile: boolean;
-  cardsWrapperRef: RefObject<HTMLDivElement>;
+  cardsWrapperRef: RefObject<HTMLDivElement | null>;
 }
 
 export function PortfolioCards({ scrollY, vh, cardsWrapperTop, isMobile, cardsWrapperRef }: Props) {
