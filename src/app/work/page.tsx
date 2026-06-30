@@ -305,44 +305,9 @@ function ParallaxGrid() {
 
 /* ─── Portfolio Section ─── */
 function PortfolioSection() {
-  const [view, setView] = useState<'List' | 'Grid'>('Grid');
-
   return (
     <section className="-mt-40 pb-0 text-[#0A0A0A]">
-      <div className="max-w-[1600px] mx-auto flex justify-center mb-10 px-6 sm:px-10 font-[family-name:var(--font-space-grotesk)] text-sm md:text-lg font-bold tracking-tight relative z-20">
-        <div className="flex gap-3">
-          {(['List', 'Grid'] as const).map((v) => (
-            <span key={v} className="flex items-center gap-3">
-              <button
-                onClick={() => setView(v)}
-                className={`transition-colors cursor-pointer ${view === v ? 'text-[#0A0A0A]' : 'text-black/30 hover:text-black/60'}`}
-              >
-                {v}
-              </button>
-              {v !== 'Grid' && <span className="text-black/30">/</span>}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {view === 'List' && (
-        <div className="relative max-w-[1600px] mx-auto py-10 px-6 sm:px-10 mb-32">
-          <div className="flex flex-col items-center justify-center relative z-10">
-            {projects.map((p) => (
-              <a
-                key={p.slug}
-                href={`/work/${p.slug}`}
-                className="block font-[family-name:var(--font-anton)] text-center leading-[0.88] text-[#0A0A0A] transition-colors hover:text-[#1038CC] uppercase w-full py-4"
-                style={{ fontSize: 'clamp(50px, 9vw, 150px)', letterSpacing: '-0.02em' }}
-              >
-                {p.name}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {view === 'Grid' && <ParallaxGrid />}
+      <ParallaxGrid />
     </section>
   );
 }
